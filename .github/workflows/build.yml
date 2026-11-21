@@ -8,20 +8,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone repository manually
+      - name: Clone and Setup Environment
         run: |
           git clone https://github.com/${{ github.repository }}.git .
           git checkout ${{ github.sha }}
+          git clone https://github.com/flutter/flutter.git -b stable --depth 1 _flutter
+          echo "$PWD/_flutter/bin" >> $GITHUB_PATH
 
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.19.x'
-          channel: 'stable'
+      - name: Build APK
+        run: |
+          flutter doctor
+          flutter pub get
+          flutter build apk --release
 
-      - run: flutter pub get
-      - run: flutter build apk --release
-
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
