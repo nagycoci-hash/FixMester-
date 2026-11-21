@@ -1,11 +1,11 @@
 name: Build APK
 
 on:
-    push:
-        branches: [main, master]
+  push:
+    branches: [ main, master ]
 
 jobs:
-    build:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
