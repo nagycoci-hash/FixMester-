@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const FixMesterApp());
@@ -22,7 +24,7 @@ class FixMesterApp extends StatelessWidget {
   }
 }
 
-// 1. BETÖLTŐ / SPLASH KÉPERNYŐ
+// 1. SPLASH KÉPERNYŐ
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -163,11 +165,10 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
   String searchQuery = "";
   String selectedProf = "Összes szakma";
   String selectedDist = "Minden kerület";
-  
+
   bool isAdminMode = false;
   final String secretAdminCode = "FixMester_Secure_Admin_2026#";
 
-  // TELJES BŐVÍTETT SZAKMA LISTA
   final List<String> allProfessions = [
     'Összes szakma',
     'Vízszerelő',
@@ -191,19 +192,25 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
       name: 'Kovács Péter',
       prof: 'Vízszerelő',
       dists: ['XI. kerület', 'XII. kerület', 'I. kerület'],
-      phone: '+36 30 555 1234',
+      phone: '+36305551234',
       email: 'kovacs.peter@fixmester.hu',
       rating: '4.9',
-      badge: 'Apukám ajánlásával · Ellenőrzött',
-      bio: '20 év tapasztalat csőtörés elhárításban és fürdőszoba felújításban.',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      badge: 'Ellenőrzött szakember',
+      bio:
+          '20 év tapasztalat csőtörés elhárításban és fürdőszoba felújításban.',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       regCode: 'FM-REF-001',
       workPhotos: [
         'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60',
-        'https://images.unsplash.com/photo-1542013936693-8846383c0abd?w=500&auto=format&fit=crop&q=60',
+        'https://images.unsplash.com/photo-1542013936693-8846383c0abd?w=500&auto=format&fit=crop&q=60'
       ],
       reviewsList: [
-        Review(authorName: 'Nagy Anna', comment: 'Nagyon pontos és precíz munkát végzett!', rating: 5.0, date: '2026.05.12'),
+        Review(
+            authorName: 'Nagy Anna',
+            comment: 'Nagyon pontos és precíz munkát végzett!',
+            rating: 5.0,
+            date: '2026.05.12'),
       ],
       profileViews: 120,
       callClicks: 28,
@@ -212,18 +219,24 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
       name: 'Molnár Ferenc',
       prof: 'Kertész / Fakivágás',
       dists: ['II. kerület', 'XII. kerület', 'XI. kerület'],
-      phone: '+36 70 888 4321',
+      phone: '+36708884321',
       email: 'molnar.ferenc@fixmester.hu',
       rating: '5.0',
-      badge: 'Apukám ajánlásával · Ellenőrzött',
-      bio: 'Veszélyes fakivágás alpinista technikával, gallyazás és kertfenntartás.',
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      badge: 'Ellenőrzött szakember',
+      bio:
+          'Veszélyes fakivágás alpinista technikával, gallyazás és kertfenntartás.',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
       regCode: 'FM-REF-002',
       workPhotos: [
-        'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=60',
+        'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=60'
       ],
       reviewsList: [
-        Review(authorName: 'Kovács Judit', comment: 'Gyorsan és biztonságosan kivágták a nagy diófát.', rating: 5.0, date: '2026.06.02'),
+        Review(
+            authorName: 'Kovács Judit',
+            comment: 'Gyorsan és biztonságosan kivágták a nagy diófát.',
+            rating: 5.0,
+            date: '2026.06.02'),
       ],
       profileViews: 95,
       callClicks: 22,
@@ -231,18 +244,38 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
   ];
 
   final TextEditingController searchController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _makeDirectCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('Nem sikerült hívni a következő számot: $phoneNumber'),
+            backgroundColor: Colors.red),
+      );
+    }
+  }
 
   void checkAdminCode(String input) {
     String trimmed = input.trim();
-
-    if (trimmed.toUpperCase() == "EXIT" || (isAdminMode && trimmed == secretAdminCode)) {
+    if (trimmed.toUpperCase() == "EXIT" ||
+        (isAdminMode && trimmed == secretAdminCode)) {
       setState(() {
         isAdminMode = false;
         searchController.clear();
         searchQuery = "";
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kiléptél az admin módból!'), backgroundColor: Colors.grey),
+        const SnackBar(
+            content: Text('Kiléptél az admin módból!'),
+            backgroundColor: Colors.grey),
       );
       return;
     }
@@ -254,9 +287,71 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
         searchQuery = "";
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sikeres ADMIN belépés!'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('Sikeres ADMIN belépés!'),
+            backgroundColor: Colors.red),
       );
     }
+  }
+
+  // Saját profil törlése kód alapján vagy admin módban
+  void confirmAndDeleteExpert(Expert expert) {
+    final TextEditingController codeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Profil törlése: ${expert.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                  'Add meg a regisztrációkor kapott azonosítót (vagy admin kódot) a törléshez:'),
+              const SizedBox(height: 10),
+              TextField(
+                controller: codeController,
+                decoration: const InputDecoration(
+                    labelText: 'Azonosító (pl. FM-REF-...)'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Mégse'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, foregroundColor: Colors.white),
+              onPressed: () {
+                String inputCode = codeController.text.trim();
+                if (isAdminMode || inputCode == expert.regCode) {
+                  setState(() {
+                    experts.remove(expert);
+                  });
+                  Navigator.pop(context);
+                  Navigator.pop(context); // Bezárja a részletes adatlapot is
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Szakember sikeresen törölve!'),
+                        backgroundColor: Colors.red),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            'Hiba: Hibás azonosító! Csak a saját profilodat törölheted.'),
+                        backgroundColor: Colors.red),
+                  );
+                }
+              },
+              child: const Text('Törlés'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void showAdminRegistrationsModal() {
@@ -277,8 +372,14 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Admin: Új Regisztrációk', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
-                  IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                  const Text('Admin: Regisztrációk kezelése',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red)),
+                  IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context)),
                 ],
               ),
               const Divider(),
@@ -291,9 +392,13 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                       margin: const EdgeInsets.only(bottom: 10),
                       elevation: 1,
                       child: ListTile(
-                        leading: CircleAvatar(backgroundImage: NetworkImage(exp.avatarUrl)),
-                        title: Text('${exp.name} (${exp.regCode})', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text('${exp.prof} | Kerületek: ${exp.dists.join(", ")}\nTel: ${exp.phone}'),
+                        leading: CircleAvatar(
+                            backgroundImage: NetworkImage(exp.avatarUrl)),
+                        title: Text('${exp.name} (${exp.regCode})',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(
+                            '${exp.prof} | Kerületek: ${exp.dists.join(", ")}\nTel: ${exp.phone}'),
                         isThreeLine: true,
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
@@ -303,7 +408,9 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                             });
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${exp.name} törölve!'), backgroundColor: Colors.red),
+                              SnackBar(
+                                  content: Text('${exp.name} törölve!'),
+                                  backgroundColor: Colors.red),
                             );
                           },
                         ),
@@ -336,46 +443,72 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(controller: nameC, decoration: const InputDecoration(labelText: 'Neved')),
+                    TextField(
+                        controller: nameC,
+                        decoration: const InputDecoration(labelText: 'Neved')),
                     const SizedBox(height: 8),
-                    const Text('Csillagok:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    const Text('Csillagok:',
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
                     Row(
                       children: [
-                        sliderStarButton(1.0, selectedRating, setDialogState, (v) => selectedRating = v),
-                        sliderStarButton(2.0, selectedRating, setDialogState, (v) => selectedRating = v),
-                        sliderStarButton(3.0, selectedRating, setDialogState, (v) => selectedRating = v),
-                        sliderStarButton(4.0, selectedRating, setDialogState, (v) => selectedRating = v),
-                        sliderStarButton(5.0, selectedRating, setDialogState, (v) => selectedRating = v),
+                        sliderStarButton(1.0, selectedRating, setDialogState,
+                            (v) => selectedRating = v),
+                        sliderStarButton(2.0, selectedRating, setDialogState,
+                            (v) => selectedRating = v),
+                        sliderStarButton(3.0, selectedRating, setDialogState,
+                            (v) => selectedRating = v),
+                        sliderStarButton(4.0, selectedRating, setDialogState,
+                            (v) => selectedRating = v),
+                        sliderStarButton(5.0, selectedRating, setDialogState,
+                            (v) => selectedRating = v),
                         const SizedBox(width: 8),
-                        Text('$selectedRating', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.amber)),
+                        Text('$selectedRating',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber)),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    TextField(controller: commentC, maxLines: 3, decoration: const InputDecoration(labelText: 'Vélemény...')),
+                    TextField(
+                        controller: commentC,
+                        maxLines: 3,
+                        decoration:
+                            const InputDecoration(labelText: 'Vélemény...')),
                   ],
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Mégse')),
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Mégse')),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white),
                   onPressed: () {
                     if (nameC.text.isNotEmpty && commentC.text.isNotEmpty) {
                       setState(() {
                         expert.reviewsList.insert(
                           0,
-                          Review(authorName: nameC.text, comment: commentC.text, rating: selectedRating, date: 'Ma'),
+                          Review(
+                              authorName: nameC.text,
+                              comment: commentC.text,
+                              rating: selectedRating,
+                              date: 'Ma'),
                         );
                         double sum = 0;
                         for (var r in expert.reviewsList) {
                           sum += r.rating;
                         }
-                        expert.rating = (sum / expert.reviewsList.length).toStringAsFixed(1);
+                        expert.rating = (sum / expert.reviewsList.length)
+                            .toStringAsFixed(1);
                       });
                       Navigator.pop(ctx);
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Értékelés rögzítve!'), backgroundColor: Colors.green),
+                        const SnackBar(
+                            content: Text('Értékelés rögzítve!'),
+                            backgroundColor: Colors.green),
                       );
                     }
                   },
@@ -389,32 +522,51 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
     );
   }
 
-  Widget sliderStarButton(double value, double current, StateSetter setDialogState, Function(double) onChanged) {
+  Widget sliderStarButton(double value, double current,
+      StateSetter setDialogState, Function(double) onChanged) {
     return IconButton(
-      icon: Icon(value <= current ? Icons.star : Icons.star_border, color: Colors.amber),
+      icon: Icon(value <= current ? Icons.star : Icons.star_border,
+          color: Colors.amber),
       onPressed: () => setDialogState(() => onChanged(value)),
     );
   }
 
+  // REGISZTRÁCIÓ GALÉRIA VÁLASZTÁSSAL ÉS KÓD KIÍRÁSSAL
   void openReg() {
     final TextEditingController nameC = TextEditingController();
     final TextEditingController phoneC = TextEditingController();
     final TextEditingController emailC = TextEditingController();
     final TextEditingController bioC = TextEditingController();
-    
-    List<String> regProfessions = allProfessions.where((p) => p != 'Összes szakma').toList();
+
+    List<String> regProfessions =
+        allProfessions.where((p) => p != 'Összes szakma').toList();
     String profC = regProfessions.first;
-    
-    List<String> allDistricts = ['I. kerület', 'II. kerület', 'III. kerület', 'IV. kerület', 'XI. kerület', 'XII. kerület', 'XIII. kerület', 'XIV. kerület', 'XVI. kerület'];
+
+    List<String> allDistricts = [
+      'I. kerület',
+      'II. kerület',
+      'III. kerület',
+      'IV. kerület',
+      'XI. kerület',
+      'XII. kerület',
+      'XIII. kerület',
+      'XIV. kerület',
+      'XVI. kerület'
+    ];
     Map<String, bool> selectedDistricts = {
-      'I. kerület': false, 'II. kerület': false, 'III. kerület': false, 'IV. kerület': false,
-      'XI. kerület': true, 'XII. kerület': false, 'XIII. kerület': false, 'XIV. kerület': false, 'XVI. kerület': false,
+      'I. kerület': false,
+      'II. kerület': false,
+      'III. kerület': false,
+      'IV. kerület': false,
+      'XI. kerület': true,
+      'XII. kerület': false,
+      'XIII. kerület': false,
+      'XIV. kerület': false,
+      'XVI. kerület': false,
     };
 
-    String uploadedAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
-    List<String> uploadedWorkPhotos = [
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=60'
-    ];
+    String? selectedAvatarUrl;
+    List<String> regWorkPhotos = [];
 
     showModalBottomSheet(
       context: context,
@@ -426,6 +578,38 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
       builder: (BuildContext ctx) {
         return StatefulBuilder(
           builder: (BuildContext ctx, StateSetter setModalState) {
+            Future<void> pickImage(bool isAvatar) async {
+              try {
+                final XFile? image =
+                    await _picker.pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  setModalState(() {
+                    if (isAvatar) {
+                      selectedAvatarUrl = image.path;
+                    } else {
+                      regWorkPhotos.add(image.path);
+                    }
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content:
+                            Text('Kép sikeresen kiválasztva a galériából!'),
+                        backgroundColor: Colors.orange),
+                  );
+                }
+              } catch (e) {
+                setModalState(() {
+                  String fallbackUrl =
+                      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60';
+                  if (isAvatar) {
+                    selectedAvatarUrl = fallbackUrl;
+                  } else {
+                    regWorkPhotos.add(fallbackUrl);
+                  }
+                });
+              }
+            }
+
             return Padding(
               padding: EdgeInsets.only(
                 left: 16,
@@ -438,43 +622,123 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Új szakember regisztrációja', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Új szakember regisztrációja',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
+
+                    // PROFILKÉP VÁLASZTÓ
                     Center(
                       child: Column(
                         children: [
-                          CircleAvatar(radius: 40, backgroundImage: NetworkImage(uploadedAvatar)),
+                          CircleAvatar(
+                            radius: 45,
+                            backgroundColor: Colors.orange.shade100,
+                            backgroundImage: selectedAvatarUrl != null
+                                ? NetworkImage(selectedAvatarUrl!)
+                                : null,
+                            child: selectedAvatarUrl == null
+                                ? const Icon(Icons.person,
+                                    size: 45, color: Colors.orange)
+                                : null,
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () => pickImage(true),
+                            icon: const Icon(Icons.photo_library, size: 16),
+                            label:
+                                const Text('Profilkép kiválasztása (Galéria)'),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // MUNKÁK KÉPEI GALÉRIA
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.orange.shade200),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Munkák képei a galériából:',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: Colors.orange)),
+                          const SizedBox(height: 6),
+                          regWorkPhotos.isNotEmpty
+                              ? SizedBox(
+                                  height: 60,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: regWorkPhotos.length,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        margin: const EdgeInsets.only(right: 8),
+                                        width: 60,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          image: DecorationImage(
+                                              image: NetworkImage(
+                                                  regWorkPhotos[index]),
+                                              fit: BoxFit.cover),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              : const Text('Még nincs munkakép hozzáadva.',
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.grey)),
                           const SizedBox(height: 8),
                           OutlinedButton.icon(
-                            onPressed: () {
-                              setModalState(() {
-                                uploadedAvatar = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80';
-                              });
-                            },
-                            icon: const Icon(Icons.person_pin, size: 16, color: Colors.orange),
-                            label: const Text('Profilkép kiválasztása', style: TextStyle(color: Colors.orange)),
-                            style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.orange)),
+                            onPressed: () => pickImage(false),
+                            icon: const Icon(Icons.add_photo_alternate,
+                                size: 16, color: Colors.orange),
+                            label: const Text(
+                                'Munkakép hozzáadása a Galériából',
+                                style: TextStyle(color: Colors.orange)),
+                            style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.orange)),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 12),
-                    TextField(controller: nameC, decoration: const InputDecoration(labelText: 'Név')),
+
+                    TextField(
+                        controller: nameC,
+                        decoration: const InputDecoration(labelText: 'Név')),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: profC,
                       items: regProfessions
-                          .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                          .map(
+                              (p) => DropdownMenuItem(value: p, child: Text(p)))
                           .toList(),
                       onChanged: (val) => setModalState(() => profC = val!),
-                      decoration: const InputDecoration(labelText: 'Szakma / Szolgáltatás'),
+                      decoration: const InputDecoration(
+                          labelText: 'Szakma / Szolgáltatás'),
                     ),
                     const SizedBox(height: 12),
-                    
-                    const Text('Mely kerületekben vállalsz munkát?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange)),
+
+                    const Text('Mely kerületekben vállalsz munkát?',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Colors.orange)),
                     const SizedBox(height: 6),
                     Container(
-                      height: 140,
+                      height: 130,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(8),
@@ -483,7 +747,8 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                         shrinkWrap: true,
                         children: allDistricts.map((dist) {
                           return CheckboxListTile(
-                            title: Text(dist, style: const TextStyle(fontSize: 13)),
+                            title: Text(dist,
+                                style: const TextStyle(fontSize: 13)),
                             value: selectedDistricts[dist],
                             activeColor: Colors.orange,
                             dense: true,
@@ -498,31 +763,56 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                     ),
                     const SizedBox(height: 12),
 
-                    TextField(controller: phoneC, decoration: const InputDecoration(labelText: 'Telefonszám')),
+                    TextField(
+                        controller: phoneC,
+                        decoration:
+                            const InputDecoration(labelText: 'Telefonszám')),
                     const SizedBox(height: 8),
                     TextField(
                       controller: emailC,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(labelText: 'Valódi E-mail cím'),
+                      decoration:
+                          const InputDecoration(labelText: 'Valódi E-mail cím'),
                     ),
                     const SizedBox(height: 8),
-                    TextField(controller: bioC, decoration: const InputDecoration(labelText: 'Rövid leírás')),
+                    TextField(
+                        controller: bioC,
+                        decoration:
+                            const InputDecoration(labelText: 'Rövid leírás')),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white),
                         onPressed: () {
+                          if (selectedAvatarUrl == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Hiba: Profilkép feltöltése KÖTELEZŐ!'),
+                                  backgroundColor: Colors.red),
+                            );
+                            return;
+                          }
+
                           String email = emailC.text.trim();
-                          bool isEmailValid = email.contains('@') && email.contains('.') && email.length > 5;
-                          
+                          bool isEmailValid = email.contains('@') &&
+                              email.contains('.') &&
+                              email.length > 5;
+
                           List<String> chosenDists = [];
                           selectedDistricts.forEach((dist, isSelected) {
                             if (isSelected) chosenDists.add(dist);
                           });
 
-                          if (nameC.text.isNotEmpty && phoneC.text.isNotEmpty && isEmailValid && chosenDists.isNotEmpty) {
-                            String generatedCode = 'FM-REF-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+                          if (nameC.text.isNotEmpty &&
+                              phoneC.text.isNotEmpty &&
+                              isEmailValid &&
+                              chosenDists.isNotEmpty) {
+                            String generatedCode =
+                                'FM-REF-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
 
                             setState(() {
                               experts.insert(
@@ -535,10 +825,12 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                                   email: email,
                                   rating: '5.0',
                                   badge: 'Új regisztrált',
-                                  bio: bioC.text.isNotEmpty ? bioC.text : 'Szakember leírása.',
-                                  avatarUrl: uploadedAvatar,
+                                  bio: bioC.text.isNotEmpty
+                                      ? bioC.text
+                                      : 'Szakember leírása.',
+                                  avatarUrl: selectedAvatarUrl!,
                                   regCode: generatedCode,
-                                  workPhotos: uploadedWorkPhotos,
+                                  workPhotos: regWorkPhotos,
                                   reviewsList: [],
                                   profileViews: 1,
                                   callClicks: 0,
@@ -546,27 +838,35 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                               );
                             });
                             Navigator.pop(ctx);
-                            
-                            if (isAdminMode) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('🔔 ADMIN ÉRTESÍTÉS: Új szaki! Kód: $generatedCode'),
-                                  backgroundColor: Colors.red.shade800,
-                                  duration: const Duration(seconds: 6),
-                                ),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Sikeres regisztráció!'), backgroundColor: Colors.green),
-                              );
-                            }
+
+                            // Megmutatjuk a törlési kódot a felhasználónak, hogy tudja majd törölni a sajátját!
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Sikeres regisztráció!'),
+                                content: Text(
+                                    'A profilod elmentve.\n\n🔒 A SAJÁT TÖRLÉSI KÓDOD:\n$generatedCode\n\n(Őrizd meg, ha később törölni szeretnéd a saját feltöltésed!)'),
+                                actions: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.orange,
+                                        foregroundColor: Colors.white),
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Rendben'),
+                                  ),
+                                ],
+                              ),
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Kérlek tölts ki minden mezőt, és válassz ki legalább EGY kerületet!'), backgroundColor: Colors.red),
+                              const SnackBar(
+                                  content: Text(
+                                      'Kérlek tölts ki minden mezőt, és válassz ki legalább EGY kerületet!'),
+                                  backgroundColor: Colors.red),
                             );
                           }
                         },
-                        child: const Text('Regisztráció'),
+                        child: const Text('Regisztráció elküldése'),
                       ),
                     ),
                   ],
@@ -579,6 +879,7 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
     );
   }
 
+  // RÉSZLETES ADATLAP SAJÁT TÖRLÉS GOMBbal
   void openDetail(Expert expert) {
     setState(() {
       expert.profileViews++;
@@ -608,23 +909,37 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                     child: Container(
                       width: 40,
                       height: 4,
-                      decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                      decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2)),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      CircleAvatar(radius: 35, backgroundImage: NetworkImage(expert.avatarUrl)),
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundColor: Colors.orange.shade100,
+                        backgroundImage: NetworkImage(expert.avatarUrl),
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(expert.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            Text(expert.name,
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 2),
-                            Text(expert.prof, style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 14)),
+                            Text(expert.prof,
+                                style: const TextStyle(
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14)),
                             const SizedBox(height: 2),
-                            Text('Kerületek: ${expert.dists.join(", ")}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                            Text('Kerületek: ${expert.dists.join(", ")}',
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 12)),
                           ],
                         ),
                       ),
@@ -635,54 +950,17 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                     children: [
                       const Icon(Icons.star, color: Colors.amber, size: 18),
                       const SizedBox(width: 4),
-                      Text(expert.rating, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text(' (${expert.reviewsList.length} értékelés)', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                      Text(expert.rating,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(' (${expert.reviewsList.length} értékelés)',
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
-                  // STATISZTIKA KÁRTYA
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.shade300),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.insights, color: Colors.orange, size: 18),
-                            SizedBox(width: 8),
-                            Text('FixMester Teljesítmény Statisztika', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange)),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Column(
-                              children: [
-                                Text('${expert.profileViews}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                const Text('Profil megtekintés', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                              ],
-                            ),
-                            Container(height: 25, width: 1, color: Colors.orange.shade200),
-                            Column(
-                              children: [
-                                Text('${expert.callClicks}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
-                                const Text('Appon belüli hívás', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
 
+                  // TELEFONSZÁM ÉS KÖZVETLEN TÁRCZÁZÓ GOMB
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -690,66 +968,117 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey.shade300),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        const Text('Telefonszám',
+                            style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Telefonszám', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                            Text(expert.phone, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            Expanded(
+                              child: Text(
+                                expert.phone,
+                                style: const TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  expert.callClicks++;
+                                });
+                                _makeDirectCall(expert.phone);
+                              },
+                              icon: const Icon(Icons.phone, size: 14),
+                              label: const Text('Hívás',
+                                  style: TextStyle(fontSize: 12)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                            ),
                           ],
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              expert.callClicks++;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('📞 FixMester hívás indítva: ${expert.phone}'), backgroundColor: Colors.green),
-                            );
-                          },
-                          icon: const Icon(Icons.phone, size: 16),
-                          label: const Text('Hívás az Appból'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text('Bemutatkozás', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text('Bemutatkozás',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 6),
-                  Text(expert.bio, style: const TextStyle(color: Colors.black87, fontSize: 14)),
+                  Text(expert.bio,
+                      style:
+                          const TextStyle(color: Colors.black87, fontSize: 14)),
                   const SizedBox(height: 20),
-                  const Text('Munkák képei', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+
+                  const Text('Munkák képei',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    height: 120,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: expert.workPhotos.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.only(right: 10),
-                          width: 160,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            image: DecorationImage(image: NetworkImage(expert.workPhotos[index]), fit: BoxFit.cover),
+                  expert.workPhotos.isNotEmpty
+                      ? SizedBox(
+                          height: 120,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: expert.workPhotos.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                margin: const EdgeInsets.only(right: 10),
+                                width: 160,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: DecorationImage(
+                                      image: NetworkImage(
+                                          expert.workPhotos[index]),
+                                      fit: BoxFit.cover),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        )
+                      : const Text('Nincsenek feltöltött munkaképek.',
+                          style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  const SizedBox(height: 24),
+
+                  // SAJÁT PROFIL TÖRLÉSE GOMB
+                  Center(
+                    child: OutlinedButton.icon(
+                      onPressed: () => confirmAndDeleteExpert(expert),
+                      icon: const Icon(Icons.delete_outline,
+                          color: Colors.red, size: 16),
+                      label: const Text('Saját feltöltés törlése',
+                          style: TextStyle(color: Colors.red)),
+                      style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.red)),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Ügyfelek értékelései', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      ElevatedButton.icon(
+                      const Text('Ügyfelek értékelései',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      OutlinedButton.icon(
                         onPressed: () => openAddReviewDialog(expert),
-                        icon: const Icon(Icons.rate_review, size: 14),
-                        label: const Text('Értékelés írása'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.amber.shade700, foregroundColor: Colors.white),
+                        icon: const Icon(Icons.rate_review,
+                            size: 14, color: Colors.orange),
+                        label: const Text('Értékelés',
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.orange)),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.orange.shade300),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                        ),
                       ),
                     ],
                   ),
@@ -764,17 +1093,24 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                         margin: const EdgeInsets.only(bottom: 8),
                         elevation: 0,
                         color: Colors.grey.shade100,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(rev.authorName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                  Text(rev.date, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                                  Text(rev.authorName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13)),
+                                  Text(rev.date,
+                                      style: const TextStyle(
+                                          color: Colors.grey, fontSize: 11)),
                                 ],
                               ),
                               const SizedBox(height: 4),
@@ -783,18 +1119,25 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                                   Row(
                                     children: List.generate(5, (starIdx) {
                                       return Icon(
-                                        starIdx < rev.rating ? Icons.star : Icons.star_border,
+                                        starIdx < rev.rating
+                                            ? Icons.star
+                                            : Icons.star_border,
                                         color: Colors.amber,
                                         size: 14,
                                       );
                                     }),
                                   ),
                                   const SizedBox(width: 6),
-                                  Text('${rev.rating}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text('${rev.rating}',
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
                                 ],
                               ),
                               const SizedBox(height: 6),
-                              Text(rev.comment, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                              Text(rev.comment,
+                                  style: const TextStyle(
+                                      fontSize: 13, color: Colors.black87)),
                             ],
                           ),
                         ),
@@ -814,10 +1157,13 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
   @override
   Widget build(BuildContext context) {
     List<Expert> filtered = experts.where((item) {
-      bool matchSearch = item.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          item.prof.toLowerCase().contains(searchQuery.toLowerCase());
-      bool matchProf = selectedProf == "Összes szakma" || item.prof == selectedProf;
-      bool matchDist = selectedDist == "Minden kerület" || item.dists.contains(selectedDist);
+      bool matchSearch =
+          item.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              item.prof.toLowerCase().contains(searchQuery.toLowerCase());
+      bool matchProf =
+          selectedProf == "Összes szakma" || item.prof == selectedProf;
+      bool matchDist =
+          selectedDist == "Minden kerület" || item.dists.contains(selectedDist);
       return matchSearch && matchProf && matchDist;
     }).toList();
 
@@ -828,16 +1174,27 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
-              child: Text(isAdminMode ? 'ADMIN' : 'FM', style: TextStyle(color: isAdminMode ? Colors.red.shade800 : Colors.orange, fontWeight: FontWeight.bold)),
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(6)),
+              child: Text(isAdminMode ? 'ADMIN' : 'FM',
+                  style: TextStyle(
+                      color: isAdminMode ? Color(0xff8f17c6) : Colors.orange,
+                      fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 10),
-            Text(isAdminMode ? 'FixMester [ADMIN MÓD]' : 'FixMester', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(isAdminMode ? 'FixMester [ADMIN]' : 'FixMester',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16)),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(4)),
-              child: Text(isAdminMode ? 'VÉDETT' : 'Béta', style: const TextStyle(color: Colors.white, fontSize: 12)),
+              decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(4)),
+              child: Text(isAdminMode ? 'VÉDETT' : 'Béta',
+                  style: const TextStyle(color: Colors.white, fontSize: 12)),
             ),
           ],
         ),
@@ -870,11 +1227,13 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                   },
                   onSubmitted: (val) => checkAdminCode(val),
                   decoration: InputDecoration(
-                    hintText: 'Keresés név vagy szakma (pl. klíma, fa...) szerint...',
+                    hintText: 'Keresés név vagy szakma szerint...',
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -885,7 +1244,10 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                         value: selectedProf,
                         isExpanded: true,
                         items: allProfessions
-                            .map((p) => DropdownMenuItem(value: p, child: Text(p, style: const TextStyle(fontSize: 12))))
+                            .map((p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(p,
+                                    style: const TextStyle(fontSize: 12))))
                             .toList(),
                         onChanged: (val) => setState(() => selectedProf = val!),
                       ),
@@ -895,8 +1257,22 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                       child: DropdownButton<String>(
                         value: selectedDist,
                         isExpanded: true,
-                        items: ['Minden kerület', 'I. kerület', 'II. kerület', 'III. kerület', 'IV. kerület', 'XI. kerület', 'XII. kerület', 'XIII. kerület', 'XIV. kerület', 'XVI. kerület']
-                            .map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12))))
+                        items: [
+                          'Minden kerület',
+                          'I. kerület',
+                          'II. kerület',
+                          'III. kerület',
+                          'IV. kerület',
+                          'XI. kerület',
+                          'XII. kerület',
+                          'XIII. kerület',
+                          'XIV. kerület',
+                          'XVI. kerület'
+                        ]
+                            .map((d) => DropdownMenuItem(
+                                value: d,
+                                child: Text(d,
+                                    style: const TextStyle(fontSize: 12))))
                             .toList(),
                         onChanged: (val) => setState(() => selectedDist = val!),
                       ),
@@ -912,8 +1288,17 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(isAdminMode ? 'Szakemberek kezelése (Admin Mód)' : 'Elérhető Szakemberek', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isAdminMode ? Colors.red.shade800 : Colors.black)),
-                Text('${filtered.length} szaki', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                Text(
+                    isAdminMode
+                        ? 'Szakemberek kezelése (Admin)'
+                        : 'Elérhető Szakemberek',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color:
+                            isAdminMode ? Colors.red.shade800 : Colors.black)),
+                Text('${filtered.length} szaki',
+                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
           ),
@@ -925,85 +1310,115 @@ class _FixMesterHomePageState extends State<FixMesterHomePage> {
                 Expert item = filtered[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 1,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => openDetail(item),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CircleAvatar(radius: 30, backgroundImage: NetworkImage(item.avatarUrl)),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(6)),
-                                      child: Text(item.dists.isNotEmpty ? item.dists.first : 'Kerület', style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.orange.shade100,
+                          backgroundImage: NetworkImage(item.avatarUrl),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                Text(item.prof, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600, fontSize: 13)),
-                                const SizedBox(height: 4),
-                                Text('📍 ${item.dists.length} kerületben vállal munkát', style: const TextStyle(color: Colors.blueGrey, fontSize: 11)),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star, color: Colors.amber, size: 16),
-                                    const SizedBox(width: 4),
-                                    Text(item.rating, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                    Text(' (${item.reviewsList.length})', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(item.badge, style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.w500)),
-                                const SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text('📞 Telefonszám rejtve', style: TextStyle(color: Colors.grey, fontSize: 12, fontStyle: FontStyle.italic)),
-                                    Row(
-                                      children: [
-                                        if (isAdminMode) ...[
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_forever, color: Colors.red),
-                                            tooltip: 'Törlés',
-                                            onPressed: () {
-                                              setState(() {
-                                                experts.remove(item);
-                                              });
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('${item.name} törölve!'), backgroundColor: Colors.red),
-                                              );
-                                            },
-                                          ),
-                                          const SizedBox(width: 4),
-                                        ],
-                                        ElevatedButton.icon(
-                                          onPressed: () => openDetail(item),
-                                          icon: const Icon(Icons.phone, size: 14),
-                                          label: const Text('Szám megtekintése', style: TextStyle(fontSize: 12)),
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10)),
-                                        ),
-                                      ],
+                                  ),
+                                  Text(
+                                    item.dists.isNotEmpty
+                                        ? item.dists.first
+                                        : '',
+                                    style: const TextStyle(
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(item.prof,
+                                  style: const TextStyle(
+                                      color: Colors.grey, fontSize: 13)),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_pin,
+                                      size: 14, color: Colors.red),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                      '${item.dists.length} kerületben vállal munkát',
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey)),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.star,
+                                      size: 14, color: Colors.amber),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                      '${item.rating} (${item.reviewsList.length})',
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        item.callClicks++;
+                                      });
+                                      _makeDirectCall(item.phone);
+                                    },
+                                    icon: const Icon(Icons.phone,
+                                        size: 14, color: Colors.green),
+                                    label: const Text('Hívás',
+                                        style: TextStyle(
+                                            color: Colors.green, fontSize: 12)),
+                                  ),
+                                  ElevatedButton.icon(
+                                    onPressed: () => openDetail(item),
+                                    icon: const Icon(Icons.visibility,
+                                        size: 14, color: Colors.white),
+                                    label: const Text('Profil megtekintése',
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 12)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 );
